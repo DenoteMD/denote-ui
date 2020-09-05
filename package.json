@@ -1,6 +1,6 @@
 {
   "name": "denoteui",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Denote user identity",
   "main": "./built/index.js",
   "types": "./built/index.d.ts",
@@ -45,7 +45,8 @@
   },
   "scripts": {
     "test": "echo \"Test\"",
-    "build": "tsc && node ./increase-built.js"
+    "build": "tsc && node ./increase-built.js",
+    "release": "tsc && node ./increase-built.js && npm publish"
   },
   "keywords": [
     "identity",
