@@ -1,4 +1,4 @@
-# Denote User Identify
+# Denote User Identity
 
 ## Instruction
 
