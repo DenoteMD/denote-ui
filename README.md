@@ -13,7 +13,7 @@ We take care about your privacy, instead of username/password/email we offer you
 ## Installation
 
 ```
-npm i denoteui
+npm i denote-ui
 ```
 
 ## Example
@@ -21,7 +21,7 @@ npm i denoteui
 Create a new key pair by call `DenoteUserIdentity.createNewUser()` or recover from a mnemonic words `DenoteUserIdentity.fromMnemonic(...)`.
 
 ```ts
-import DenoteUserIdentity from 'denoteui';
+import DenoteUserIdentity from 'denote-ui';
 const dui = new DenoteUserIdentity();
 console.log('Mnemonic:\t', dui.getMnemonic());
 console.log('User ID:\t', dui.getUserID());
@@ -56,4 +56,4 @@ console.log('Recovered object:\t', JSON.stringify(DenoteUserIdentity.recoverObje
 
 ## License
 
-This software was licensed under [MIT License](https://github.com/DenoteMD/denoteui/blob/master/LICENSE)
+This software was licensed under [MIT License](https://github.com/DenoteMD/denote-ui/blob/master/LICENSE)

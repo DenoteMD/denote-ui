@@ -1,16 +1,16 @@
 {
-  "name": "denoteui",
+  "name": "denote-ui",
   "version": "1.0.7",
   "description": "Denote user identity",
   "main": "./built/index.js",
   "types": "./built/index.d.ts",
-  "homepage": "https://github.com/DenoteMD/denoteui",
+  "homepage": "https://github.com/DenoteMD/denote-ui",
   "bugs": {
-    "url": "https://github.com/DenoteMD/denoteui/issues"
+    "url": "https://github.com/DenoteMD/denote-ui/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:DenoteMD/denoteui.git"
+    "url": "git@github.com:DenoteMD/denote-ui.git"
   },
   "devDependencies": {
     "@types/chai": "^4.2.4",
