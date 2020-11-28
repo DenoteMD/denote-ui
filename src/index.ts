@@ -58,9 +58,7 @@ export class DenoteUserIdentity {
     this.mnemonic = mnemonic || bip39.generateMnemonic();
     const ec = new EC('secp256k1');
     // New elliptic private key from sha512(entropy(mnemonic))
-    this.keyPair = ec.keyFromPrivate(
-      sha512().update(bip39.mnemonicToEntropy(this.mnemonic)).digest(),
-    );
+    this.keyPair = ec.keyFromPrivate(sha512().update(bip39.mnemonicToEntropy(this.mnemonic)).digest());
   }
 
   /**
@@ -91,11 +89,7 @@ export class DenoteUserIdentity {
     message.copy(prefixedMessage, prefixLength);
     const messageDigest = sha256().update(prefixedMessage).digest();
     const signature: EC.Signature = this.keyPair.sign(messageDigest);
-    const qPrime = new BN(
-      this.keyPair.getPublic().encode('hex', false),
-      'hex',
-      'be',
-    );
+    const qPrime = new BN(this.keyPair.getPublic().encode('hex', false), 'hex', 'be');
     // Store v and j
     vj.writeUInt8(signature.recoveryParam || 0, 0);
     vj.writeUInt8(ec.getKeyRecoveryParam(undefined, signature, qPrime), 1);
@@ -128,9 +122,7 @@ export class DenoteUserIdentity {
       return this.cachedUserID;
     }
     if (typeof this.keyPair !== 'undefined') {
-      this.cachedUserID = DenoteUserIdentity.publicKeyToUserID(
-        this.keyPair.getPublic().encode('array', false),
-      );
+      this.cachedUserID = DenoteUserIdentity.publicKeyToUserID(this.keyPair.getPublic().encode('array', false));
       return this.cachedUserID;
     }
     throw new Error('Key pair is undefined can not get ID');
@@ -163,16 +155,8 @@ export class DenoteUserIdentity {
    */
   public static recoverUserID(signedMessage: Buffer): string {
     const ec = new EC('secp256k1');
-    const r = new BN(
-      signedMessage.slice(0, rLength).toString('hex'),
-      'hex',
-      'be',
-    );
-    const s = new BN(
-      signedMessage.slice(rLength, rsLength).toString('hex'),
-      'hex',
-      'be',
-    );
+    const r = new BN(signedMessage.slice(0, rLength).toString('hex'), 'hex', 'be');
+    const s = new BN(signedMessage.slice(rLength, rsLength).toString('hex'), 'hex', 'be');
     const recoveryParam = signedMessage.readUInt8(rsLength);
     const j = signedMessage.readUInt8(rsLength + vLength);
     const message = signedMessage.slice(sigLength);
@@ -186,9 +170,7 @@ export class DenoteUserIdentity {
       },
       j,
     );
-    return DenoteUserIdentity.publicKeyToUserID(
-      (pubKey as curve.base.BasePoint).encode('hex', false),
-    );
+    return DenoteUserIdentity.publicKeyToUserID((pubKey as curve.base.BasePoint).encode('hex', false));
   }
 
   /**

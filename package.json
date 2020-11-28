@@ -1,6 +1,6 @@
 {
   "name": "denote-ui",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "Denote user identity",
   "main": "./built/index.js",
   "types": "./built/index.d.ts",
