@@ -1,6 +1,6 @@
 {
   "name": "denote-ui",
-  "version": "1.0.12",
+  "version": "1.0.14",
   "description": "Denote user identity",
   "main": "./built/index.js",
   "types": "./built/index.d.ts",
@@ -47,8 +47,8 @@
   },
   "scripts": {
     "test": "echo \"Test\"",
-    "build": "rm -rf ./built && tsc && node ./increase-built.js",
-    "release": "rm -rf ./built && tsc && node ./increase-built.js && npm publish"
+    "build": "rm -rf ./built && tsc",
+    "release": "npm run build && node ./increase-built.js && npm publish"
   },
   "keywords": [
     "identity",
