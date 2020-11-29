@@ -5,7 +5,8 @@ import { Buffer } from 'safe-buffer';
 import BN from 'bn.js';
 import * as bip39 from 'bip39';
 
-const prefix = 'Denote User Identity {00000000}:\n';
+const prefix = 'Denote User Identity {\x00\x00\x00\x00}:\n';
+const noncePosition = prefix.indexOf('{') + 1;
 const prefixLength = prefix.length;
 const rLength = 32;
 const sLength = 32;
@@ -14,8 +15,15 @@ const vLength = 1;
 const jLength = 1;
 const sigLength = rLength + sLength + vLength + jLength;
 
-interface IRecoveredObject {
+export interface IVerifySignedProof {
+  message: string;
+  nonce: number;
   signer: string;
+}
+
+export interface IRecoveredObject {
+  signer: string;
+  nonce: number;
   obj: object;
 }
 
@@ -85,7 +93,7 @@ export class DenoteUserIdentity {
     prefixedMessage.write(prefix, 0);
     // Write timestamp to place holder, timestamp was used as nonce
     // eslint-disable-next-line no-bitwise
-    prefixedMessage.writeUInt32BE(((Date.now() / 1000) & 0xffffffff) >>> 0, 26);
+    prefixedMessage.writeUInt32BE(((Date.now() / 1000) & 0xffffffff) >>> 0, noncePosition);
     message.copy(prefixedMessage, prefixLength);
     const messageDigest = sha256().update(prefixedMessage).digest();
     const signature: EC.Signature = this.keyPair.sign(messageDigest);
@@ -173,6 +181,14 @@ export class DenoteUserIdentity {
     return DenoteUserIdentity.publicKeyToUserID((pubKey as curve.base.BasePoint).encode('hex', false));
   }
 
+  public static verifySignedProof(signedMessage: Buffer): IVerifySignedProof {
+    return {
+      message: signedMessage.slice(sigLength + prefixLength).toString('hex'),
+      nonce: signedMessage.readUInt32BE(sigLength + noncePosition),
+      signer: DenoteUserIdentity.recoverUserID(signedMessage),
+    };
+  }
+
   /**
    * Recover an object
    * @static
@@ -184,6 +200,7 @@ export class DenoteUserIdentity {
     const signedMessage = Buffer.from(signedObj, 'base64');
     return {
       obj: JSON.parse(signedMessage.slice(prefixLength + sigLength).toString()),
+      nonce: signedMessage.readUInt32BE(sigLength + noncePosition),
       signer: DenoteUserIdentity.recoverUserID(signedMessage),
     };
   }
