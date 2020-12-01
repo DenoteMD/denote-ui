@@ -5,8 +5,8 @@ import { Buffer } from 'safe-buffer';
 import BN from 'bn.js';
 import * as bip39 from 'bip39';
 
-const prefix = 'Denote User Identity {\x00\x00\x00\x00}:\n';
-const noncePosition = prefix.indexOf('{') + 1;
+const prefix = 'DenoteUI@\x00\x00\x00\x00:';
+const noncePosition = prefix.indexOf('@') + 1;
 const prefixLength = prefix.length;
 const rLength = 32;
 const sLength = 32;
@@ -95,19 +95,20 @@ export class DenoteUserIdentity {
     // eslint-disable-next-line no-bitwise
     prefixedMessage.writeUInt32BE(((Date.now() / 1000) & 0xffffffff) >>> 0, noncePosition);
     message.copy(prefixedMessage, prefixLength);
-    const messageDigest = sha256().update(prefixedMessage).digest();
+    const messageDigest = new BN(sha256().update(prefixedMessage).digest('hex'), 'hex', 'be');
     const signature: EC.Signature = this.keyPair.sign(messageDigest);
     const qPrime = new BN(this.keyPair.getPublic().encode('hex', false), 'hex', 'be');
     // Store v and j
     vj.writeUInt8(signature.recoveryParam || 0, 0);
     vj.writeUInt8(ec.getKeyRecoveryParam(undefined, signature, qPrime), 1);
+
+    const serializedBuf = Buffer.alloc(prefixedMessage.length + sigLength);
+    serializedBuf.write(signature.r.toString('hex', 64), 0, rLength, 'hex');
+    serializedBuf.write(signature.s.toString('hex', 64), rLength, sLength, 'hex');
+    vj.copy(serializedBuf, rLength + sLength);
+    prefixedMessage.copy(serializedBuf, sigLength);
     // Serialized form
-    return Buffer.concat([
-      Buffer.from(signature.r.toArray('be')),
-      Buffer.from(signature.s.toArray('be')),
-      vj,
-      prefixedMessage,
-    ]);
+    return serializedBuf;
   }
 
   /**
@@ -164,11 +165,12 @@ export class DenoteUserIdentity {
   public static recoverUserID(signedMessage: Buffer): string {
     const ec = new EC('secp256k1');
     const r = new BN(signedMessage.slice(0, rLength).toString('hex'), 'hex', 'be');
+
     const s = new BN(signedMessage.slice(rLength, rsLength).toString('hex'), 'hex', 'be');
     const recoveryParam = signedMessage.readUInt8(rsLength);
     const j = signedMessage.readUInt8(rsLength + vLength);
     const message = signedMessage.slice(sigLength);
-    const messageDigest = sha256().update(message).digest();
+    const messageDigest = new BN(sha256().update(message).digest('hex'), 'hex', 'be');
     const pubKey = ec.recoverPubKey(
       messageDigest,
       {
