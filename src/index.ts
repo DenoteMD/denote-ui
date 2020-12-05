@@ -5,8 +5,11 @@ import { Buffer } from 'safe-buffer';
 import BN from 'bn.js';
 import * as bip39 from 'bip39';
 
-const prefix = 'DenoteUI@\x00\x00\x00\x00:';
+export * from './utilities';
+
+const prefix = 'DenoteUI@\x00\x00\x00\x00\x00\x00\x00\x00:';
 const noncePosition = prefix.indexOf('@') + 1;
+const randomSalt = noncePosition + 4;
 const prefixLength = prefix.length;
 const rLength = 32;
 const sLength = 32;
@@ -94,6 +97,8 @@ export class DenoteUserIdentity {
     // Write timestamp to place holder, timestamp was used as nonce
     // eslint-disable-next-line no-bitwise
     prefixedMessage.writeUInt32BE(((Date.now() / 1000) & 0xffffffff) >>> 0, noncePosition);
+    // eslint-disable-next-line no-bitwise
+    prefixedMessage.writeUInt32BE((Math.random() * 0xffffffff) >>> 0, randomSalt);
     message.copy(prefixedMessage, prefixLength);
     const messageDigest = new BN(sha256().update(prefixedMessage).digest('hex'), 'hex', 'be');
     const signature: EC.Signature = this.keyPair.sign(messageDigest);
@@ -180,9 +185,16 @@ export class DenoteUserIdentity {
       },
       j,
     );
-    return DenoteUserIdentity.publicKeyToUserID((pubKey as curve.base.BasePoint).encode('hex', false));
+    return DenoteUserIdentity.publicKeyToUserID((<curve.base.BasePoint>pubKey).encode('hex', false));
   }
 
+  /**
+   * Verify a signed proof
+   * @static
+   * @param {Buffer} signedMessage
+   * @return {*}  {IVerifySignedProof}
+   * @memberof DenoteUserIdentity
+   */
   public static verifySignedProof(signedMessage: Buffer): IVerifySignedProof {
     return {
       message: signedMessage.slice(sigLength + prefixLength).toString('hex'),
